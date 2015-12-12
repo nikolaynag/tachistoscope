@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style> 
+body {
+    font-size: 20pt;
+}
+
+div.exp {
+    font-size: 100pt;
+    text-align: center;
+    vertical-align: middle;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 100%;
+    height: auto;
+    background-color: white;
+    opacity: 1;
+    -webkit-user-select: none;  
+    user-select: none;
+}
+
+button {
+    font-size: 60%;
+}
+
+button.link {
+    display:inline-block;
+    position:relative;
+    background-color: transparent;
+    cursor: pointer;
+    border:0;
+    padding:0;
+    color:#00f;
+    text-decoration:underline;
+    font-size: 80%;
+}
+
+#wrapper {
+    display: none;
+    height: 100%;
+}
+
+#word {
+    z-index: 2;
+}
+
+#shutter {
+    z-index: 3;
+} 
+
+@keyframes appear {
+    from   {opacity: 0;}
+    to  {opacity: 1;}
+}
+</style>
+</head>
+
+<body onload="create_buttons()">
+
+<script src="tests.js"></script>
+<script>
+var delay = 500; 
+var exposition = 100; 
+var words = []; 
+
+var step = 0;
+
+
+function blink_shutter() {
+    shutter = document.getElementById("shutter");
+    shutter.style.animation = "none";
+    shutter.offsetWidth = shutter.offsetWidth; //magic to cause reflow
+    setTimeout(function() {
+        shutter.style.animation = "appear " + exposition + "ms 1 0s steps(1,end)";
+    }, delay);
+}
+
+function nextword() {
+    if(step >= words.length) {
+        stop();
+        return;
+    }
+    document.getElementById("word").innerHTML = words[step];
+    blink_shutter();
+    step++;
+}
+
+function start() {
+    step = 0;
+    w = document.getElementById("wrapper");
+    w.style.display = "inline";
+}
+
+function stop() {
+    w = document.getElementById("wrapper");    
+    w.style.display = "none";
+    words = [];
+    document.getElementById("word").innerHTML = "";
+    document.getElementById("shutter").style.animation = "none";
+}
+    
+function create_buttons() {
+    exp_count = tests.length;
+    for(var i = 0; i < exp_count; i++) {
+        if(tests[i].enabled == false) {
+            continue;
+        }
+        var li = document.createElement("li");
+        var btn = document.createElement("BUTTON");
+        btn.innerHTML = tests[i].title;
+        btn.className = "link";
+        btn.onclick = (function() {
+            var w = tests[i].words;
+            var e = tests[i].exposition;
+            var d = tests[i].delay;
+            return function() {
+                words = w;
+                exposition = e;
+                delay = d;
+                start();  
+            }
+        })();
+        li.appendChild(btn);
+        document.getElementById("buttons").appendChild(li);
+
+    }
+}
+
+function toggle_fullscreen() {
+    if(document.webkitIsFullScreen) {
+        document.webkitExitFullscreen();
+    } else {
+        document.documentElement.webkitRequestFullscreen();
+    }
+}
+
+</script>
+<button onclick="toggle_fullscreen()">Fullscreen</button>
+
+<ol id="buttons">
+</ol>
+
+
+<div id="wrapper" class="exp" onclick="nextword()">
+<div id="word" class="exp">Word</div>
+<div id="shutter" class="exp" onclick="nextword()">X</div>
+</div>
+
+</body>
+</html>
+
