@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>Tachistoscope tests</title>
 <style> 
 body {
     font-size: 20pt;
@@ -59,7 +60,7 @@ button.link {
 </style>
 </head>
 
-<body onload="create_buttons()">
+<body onload="on_body_load()">
 
 <script src="tests.js"></script>
 <script>
@@ -77,16 +78,6 @@ function blink_shutter() {
     setTimeout(function() {
         shutter.style.animation = "appear " + exposition + "ms 1 0s steps(1,end)";
     }, delay);
-}
-
-function nextword() {
-    if(step >= words.length) {
-        stop();
-        return;
-    }
-    document.getElementById("word").innerHTML = words[step];
-    blink_shutter();
-    step++;
 }
 
 function start() {
@@ -130,24 +121,40 @@ function create_buttons() {
     }
 }
 
-function toggle_fullscreen() {
-    if(document.webkitIsFullScreen) {
-        document.webkitExitFullscreen();
-    } else {
-        document.documentElement.webkitRequestFullscreen();
+var nextword = (function (e) {
+    if(e.stopPropagation) {
+        e.stopPropagation()
     }
+    if(step >= words.length) {
+        stop();
+        return;
+    }
+    document.getElementById("word").innerHTML = words[step];
+    blink_shutter();
+    step++;
+});
+
+function on_body_load() {
+    create_buttons();
+    document.getElementById("wrapper").onclick = nextword;
+    document.getElementById("shutter").onclick = nextword;
+
+    document.getElementById("fullscreen").onclick = (function(e) {
+        if(document.webkitIsFullScreen) {
+            document.webkitExitFullscreen();
+        } else {
+            document.documentElement.webkitRequestFullscreen();
+        }
+    });
 }
-
 </script>
-<button onclick="toggle_fullscreen()">Fullscreen</button>
 
+<button id="fullscreen">Toggle fullscreen</button>
 <ol id="buttons">
 </ol>
-
-
-<div id="wrapper" class="exp" onclick="nextword()">
+<div id="wrapper" class="exp">
 <div id="word" class="exp">Word</div>
-<div id="shutter" class="exp" onclick="nextword()">X</div>
+<div id="shutter" class="exp">X</div>
 </div>
 
 </body>
